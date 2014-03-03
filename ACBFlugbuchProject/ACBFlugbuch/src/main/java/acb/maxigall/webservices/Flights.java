@@ -120,7 +120,6 @@ public class Flights extends Activity
             case R.id.reload:
                 reload();
                 return true;
-            //    return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -134,7 +133,6 @@ public class Flights extends Activity
         new LoginToACB(settings.getString("username", ""),settings.getString("password", ""), "http://www.aeroclub-bamberg.de/index.php/component/comprofiler/login", new LoginToACB.LoginToACBListener() {
             @Override
             public void completionCallBack(String html) {
-                //textView.setText(html);
                 v.loadData(formatWebViewContent(html),"text/html; charset=UTF-8", null);
                 settings.edit().putString("content", html).commit();
                 recreate();
@@ -213,7 +211,7 @@ public class Flights extends Activity
                 }
                 break;
                 case 2:
-                    textView.setText("(c) Maximilian Gall");
+                    textView.setText("\t Flugbuch ACB\n (c)2013-2014 Maximilian Gall");
             }
 
             return rootView;
@@ -311,10 +309,6 @@ public class Flights extends Activity
                 request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
                 HttpResponse response = client.execute(request, localContext);
-                //StringBuilder sb = new StringBuilder();
-                /*for(Header h : response.getAllHeaders()){
-                    sb.append(h.getValue()+"\n");
-                }*/
 
                 HttpResponse responseFlights = client.execute(new HttpGet(
                         "http://www.aeroclub-bamberg.de/index.php?option=com_flugbuch&boxchecked=0&controller=flugbuch&showstart=2001-06-01&showend=2020-02-09"), localContext);
@@ -324,7 +318,7 @@ public class Flights extends Activity
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(in));
                 StringBuilder str = new StringBuilder();
-                String line = null;
+                String line;
                 while ((line = reader.readLine()) != null) {
                     str.append(line+"\n");
                 }
@@ -332,17 +326,6 @@ public class Flights extends Activity
 
                 result = str.toString();
 
-                /*in = response.getEntity().getContent();
-                reader = new BufferedReader(
-                        new InputStreamReader(in));
-                str = new StringBuilder();
-                line = null;
-                while ((line = reader.readLine()) != null) {
-                    str.append(line+"\n");
-                }
-                in.close();
-
-                result+= "+\n\n\n\n"+str.toString();*/
             } catch (IllegalStateException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

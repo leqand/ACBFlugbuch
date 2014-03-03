@@ -10,8 +10,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -37,8 +37,8 @@ import java.util.List;
 
 public class LoginActivity extends Activity {
 
-    TextView username;
-    TextView password;
+    EditText username;
+    EditText password;
     ProgressBar progressBar;
     Boolean clickable;
     public static String sec_id;
@@ -49,8 +49,8 @@ public class LoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        username = (TextView) findViewById(R.id.username);
-        password = (TextView) findViewById(R.id.password);
+        username = (EditText) findViewById(R.id.username);
+        password = (EditText) findViewById(R.id.password);
         clickable=true;
         this.progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
@@ -63,13 +63,21 @@ public class LoginActivity extends Activity {
             this.password.setText(settings.getString("password", ""));
         }
 
+        this.username.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            username.setText("");
+            }
+        });
+        this.password.setHint("Passwort");
+
     }
 
     public void doLogIn(View v){
         if(clickable){
             clickable=false;
-        if(username.getText()=="" || password.getText()==""){
-            showPopUp("Error","Bitte Eingaben vervollständigen");
+        if(username.getText().toString()=="" || password.getText().toString()==""){
+            Toast.makeText(getBaseContext(),"Bitte Eingaben vervollständigen",Toast.LENGTH_SHORT).show();
         }
         else{
             progressBar.setVisibility(View.VISIBLE);
@@ -102,7 +110,6 @@ public class LoginActivity extends Activity {
                             }
                             else{
                                 Toast.makeText(getBaseContext(), "Fehlerhafe Logindaten", Toast.LENGTH_SHORT).show();
-                                //showPopUp("Error", "Die Anmeldung ist fehlgeschlagen. \n Reason: "+html);
                                 progressBar.setVisibility(View.INVISIBLE);
                                 clickable=true;
                             }
@@ -201,13 +208,6 @@ public class LoginActivity extends Activity {
                 request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                 HttpResponse response = client.execute(request, localContext);
 
-                /*for(Header h : response.getAllHeaders()){
-                    sb.append(h.getValue()+"\n");
-                }*/
-
-                /*HttpResponse responseFlights = client.execute(new HttpGet(
-                        "http://www.aeroclub-bamberg.de/index.php?option=com_flugbuch&boxchecked=0&controller=flugbuch&showstart=2013-06-01&showend=2014-02-09"), localContext);*/
-
                 InputStream in;
                 in = response.getEntity().getContent();
                 BufferedReader reader = new BufferedReader(
@@ -221,17 +221,6 @@ public class LoginActivity extends Activity {
 
                 result = str.toString();
 
-                /*in = response.getEntity().getContent();
-                reader = new BufferedReader(
-                        new InputStreamReader(in));
-                str = new StringBuilder();
-                line = null;
-                while ((line = reader.readLine()) != null) {
-                    str.append(line+"\n");
-                }
-                in.close();
-
-                result+= "+\n\n\n\n"+str.toString();*/
             } catch (IllegalStateException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -281,38 +270,14 @@ public class LoginActivity extends Activity {
 
             try {
 
-               /* List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-                nameValuePairs.add(new BasicNameValuePair("username", username));
-                nameValuePairs.add(new BasicNameValuePair("passwd", password));
-
-                nameValuePairs.add(new BasicNameValuePair("op2", "login"));
-                nameValuePairs.add(new BasicNameValuePair("lang", "german"));
-                nameValuePairs.add(new BasicNameValuePair("force_session", "1"));
-                nameValuePairs.add(new BasicNameValuePair("return", "B:aHR0cDovL3d3dy5hZXJvY2x1Yi1iYW1iZXJnLmRlLw=="));
-                nameValuePairs.add(new BasicNameValuePair("message", "1"));
-                nameValuePairs.add(new BasicNameValuePair("loginform", "loginform"));
-                nameValuePairs.add(new BasicNameValuePair("cbsecuritym3", "cbm_6fa8bda5_07452fb2_42b59ac59020ac554318307787bec33f"));
-
-                nameValuePairs.add(new BasicNameValuePair("remember", "yes"));
-                nameValuePairs.add(new BasicNameValuePair("submit", "Login"));
-
-                // Execute HTTP Post Request
-                request.setEntity(new UrlEncodedFormEntity(nameValuePairs));*/
                 HttpResponse response = client.execute(request, localContext);
-
-                /*for(Header h : response.getAllHeaders()){
-                    sb.append(h.getValue()+"\n");
-                }*/
-
-                /*HttpResponse responseFlights = client.execute(new HttpGet(
-                        "http://www.aeroclub-bamberg.de/index.php?option=com_flugbuch&boxchecked=0&controller=flugbuch&showstart=2013-06-01&showend=2014-02-09"), localContext);*/
 
                 InputStream in;
                 in = response.getEntity().getContent();
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(in));
                 StringBuilder str = new StringBuilder();
-                String line = null;
+                String line;
                 while ((line = reader.readLine()) != null) {
                     str.append(line+"\n");
                 }
@@ -320,17 +285,6 @@ public class LoginActivity extends Activity {
 
                 result = str.toString();
 
-                /*in = response.getEntity().getContent();
-                reader = new BufferedReader(
-                        new InputStreamReader(in));
-                str = new StringBuilder();
-                line = null;
-                while ((line = reader.readLine()) != null) {
-                    str.append(line+"\n");
-                }
-                in.close();
-
-                result+= "+\n\n\n\n"+str.toString();*/
             } catch (IllegalStateException e) {
                 e.printStackTrace();
             } catch (IOException e) {
