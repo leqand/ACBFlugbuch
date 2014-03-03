@@ -153,9 +153,17 @@ public class Flights extends Activity
         sb.append(s.substring(s.indexOf("<table>"),s.indexOf("</table>")));
         sb.append(s);
         sb.append("</table>");
+
+        //Zusammenfassung
+
+        s=s.substring(s.indexOf("</table>")+8);
+        s=s.substring(s.indexOf("<table>"),s.indexOf("</table>"));
+        sb.append(s);
+        sb.append("</table>");
         sb.append("</body></html>");
         return sb.toString();
     }
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -243,6 +251,13 @@ public class Flights extends Activity
             sb.append("<head></head><body>");
             String s=html.substring(html.lastIndexOf("</form>"));
             sb.append(s.substring(s.indexOf("<table>"),s.indexOf("</table>")));
+            sb.append("</table>");
+
+            //Zusammenfassung
+
+            s=s.substring(s.indexOf("</table>")+8);
+            s=s.substring(s.indexOf("<table>"),s.indexOf("</table>"));
+            sb.append(s);
             sb.append("</table>");
             sb.append("</body></html>");
             return sb.toString();
