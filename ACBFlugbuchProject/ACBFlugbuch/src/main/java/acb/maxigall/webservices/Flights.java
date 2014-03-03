@@ -87,9 +87,6 @@ public class Flights extends Activity
             case 2:
                 mTitle ="Über";
                 break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
         }
     }
 

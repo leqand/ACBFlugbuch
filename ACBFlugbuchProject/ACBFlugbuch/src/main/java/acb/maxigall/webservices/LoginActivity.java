@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -76,13 +77,9 @@ public class LoginActivity extends Activity {
                 @Override
                 public void completionCallBack(String html) {
                     String s = html.substring(html.indexOf("cbsecuritym3"));
-                    //showPopUp("1.",s);
                     s=s.substring(s.indexOf("value"));
-                    //showPopUp("2",s);
                     s=s.substring(s.indexOf("\"")+1);
-                    //showPopUp("3.",s);
                     s=s.substring(0,s.indexOf("\""));
-                    //showPopUp("id",s);
                     SharedPreferences settings = getSharedPreferences("login_data", 0);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("secId",s);
@@ -104,7 +101,8 @@ public class LoginActivity extends Activity {
                                 startActivity(intent);
                             }
                             else{
-                                showPopUp("Error", "Die Anmeldung ist fehlgeschlagen. \n Reason: "+html);
+                                Toast.makeText(getBaseContext(), "Fehlerhafe Logindaten", Toast.LENGTH_SHORT).show();
+                                //showPopUp("Error", "Die Anmeldung ist fehlgeschlagen. \n Reason: "+html);
                                 progressBar.setVisibility(View.INVISIBLE);
                                 clickable=true;
                             }
