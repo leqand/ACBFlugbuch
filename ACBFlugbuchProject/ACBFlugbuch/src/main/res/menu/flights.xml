@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".Flights" >
+    <item android:id="@+id/reload"
+        android:title="Aktualisieren"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+</menu>
