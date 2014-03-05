@@ -39,6 +39,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class Flights extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
     public static String sec_id;
@@ -46,6 +47,7 @@ public class Flights extends Activity
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
+
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -67,6 +69,7 @@ public class Flights extends Activity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
         sec_id=getSharedPreferences("login_data",0).getString("secId","");
+
 
     }
 
@@ -135,7 +138,10 @@ public class Flights extends Activity
             public void completionCallBack(String html) {
                 v.loadData(formatWebViewContent(html),"text/html; charset=UTF-8", null);
                 settings.edit().putString("content", html).commit();
-                recreate();
+                FragmentManager fragmentManager = getFragmentManager();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.container, PlaceholderFragment.newInstance(1))
+                        .commit();
             }
         }).execute();
     }
@@ -173,7 +179,6 @@ public class Flights extends Activity
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
-
         /**
          * Returns a new instance of this fragment for the given section
          * number.
@@ -342,10 +347,8 @@ public class Flights extends Activity
                 result = str.toString();
 
             } catch (IllegalStateException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
