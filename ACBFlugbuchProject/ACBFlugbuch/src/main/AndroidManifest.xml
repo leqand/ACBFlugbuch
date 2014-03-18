@@ -26,6 +26,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".Flights"
+            android:label="Flights" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

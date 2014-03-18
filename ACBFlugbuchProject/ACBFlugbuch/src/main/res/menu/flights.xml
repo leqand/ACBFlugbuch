@@ -5,4 +5,8 @@
         android:title="Aktualisieren"
         android:orderInCategory="100"
         android:showAsAction="never" />
+    <item android:id="@+id/about"
+        android:title="Über"
+        android:orderInCategory="100"
+        android:showAsAction="never"/>
 </menu>
