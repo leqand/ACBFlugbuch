@@ -9,4 +9,12 @@
         android:title="Über"
         android:orderInCategory="100"
         android:showAsAction="never"/>
+    <item android:id="@+id/getStartDate"
+        android:title="StartDatum auswählen"
+        android:orderInCategory="100"
+        android:showAsAction="never"/>
+    <item android:id="@+id/getEndDate"
+        android:title="EndDatum auswählen"
+        android:orderInCategory="100"
+        android:showAsAction="never"/>
 </menu>

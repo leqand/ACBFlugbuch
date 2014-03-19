@@ -1,21 +1,17 @@
 package acb.maxigall.webservices;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
+import android.app.DatePickerDialog;
 import android.app.FragmentManager;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.widget.DatePicker;
 import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
@@ -37,81 +33,37 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 
-public class Flights extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
-    public static String sec_id;
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-    private NavigationDrawerFragment mNavigationDrawerFragment;
+public class Flights extends Activity {
+    TextView textView;
+    WebView webView;
+    static String sec_id;
+    SharedPreferences settings;
 
+    static String startDate, endDate;
 
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
-    private CharSequence mTitle;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flights);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
-
-        // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
-
+        textView = (TextView) findViewById(R.id.section_label);
+        webView = (WebView) findViewById(R.id.webView);
+        settings = getSharedPreferences("login_data", 0);
         sec_id=getSharedPreferences("login_data",0).getString("secId","");
 
-
+        startDate=settings.getString("sDate","2001-06-01");
+        endDate=settings.getString("eDate","2020-06-01");
+        setup();
     }
-
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
-    }
-
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                mTitle ="Flüge";
-                break;
-            case 2:
-                mTitle ="Über";
-                break;
-        }
-    }
-
-    public void restoreActionBar() {
-        ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.flights, menu);
-            restoreActionBar();
-            return true;
-        }
-        return super.onCreateOptionsMenu(menu);
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.login, menu);
+        return true;
     }
 
     @Override
@@ -119,29 +71,66 @@ public class Flights extends Activity
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()) {
+        switch(item.getItemId()){
+            case R.id.about:
+                about();
+                return true;
             case R.id.reload:
+                reload();
+                return true;
+            case R.id.getStartDate:
+                new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                        settings.edit().putString("sDate",year+"-"+(month+1)+"-"+day).commit();
+                    }
+                }, 2014,1,1).show();
+                reload();
+                return true;
+            case R.id.getEndDate:
+                new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                        settings.edit().putString("eDate",year+"-"+(month+1)+"-"+day).commit();
+                    }
+                }, 2014,1,1).show();
                 reload();
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    public void about(){
+        WebView v = new WebView(this);
+        v.loadData("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"+
+                "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" +
+                "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"de-DE\" lang=\"de-DE\">" +
+                "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" /> <head></head><body> <h1> ACBFlugbuch </h1> <br> (c) 2013-2014 Maximilian Gall. </body></html>","text/html; charset=UTF-8" ,null);
+    }
+
+    public void setup(){
+        textView.setText("Flüge für " + settings.getString("username",""));
+        if(settings.getString("content","").equals("")){
+            try{new LoginToACB(settings.getString("username", ""),settings.getString("password", ""), "http://www.aeroclub-bamberg.de/index.php/component/comprofiler/login", new LoginToACB.LoginToACBListener() {
+                @Override
+                public void completionCallBack(String html) {
+                    webView.loadData(formatWebViewContent(html), "text/html; charset=UTF-8", null);
+                    settings.edit().putString("content", html).commit();
+                }
+            }).execute();}
+            catch(Exception e){textView.setText(e.getMessage());}}
+        else{
+            webView.loadData(formatWebViewContent(settings.getString("content", "")), "text/html; charset=UTF-8", null);
+        }
+    }
 
     public void reload(){
-        final SharedPreferences settings = getSharedPreferences("login_data", 0);
-        final TextView textView = (TextView) findViewById(R.id.section_label);
-        final WebView v = (WebView) findViewById(R.id.webView);
         textView.setText("Flüge für " + settings.getString("username",""));
         new LoginToACB(settings.getString("username", ""),settings.getString("password", ""), "http://www.aeroclub-bamberg.de/index.php/component/comprofiler/login", new LoginToACB.LoginToACBListener() {
             @Override
             public void completionCallBack(String html) {
-                v.loadData(formatWebViewContent(html),"text/html; charset=UTF-8", null);
+                webView.loadData(formatWebViewContent(html), "text/html; charset=UTF-8", null);
                 settings.edit().putString("content", html).commit();
-                FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction()
-                        .replace(R.id.container, PlaceholderFragment.newInstance(1))
-                        .commit();
             }
         }).execute();
     }
@@ -153,7 +142,7 @@ public class Flights extends Activity
                         "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" +
                         "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"de-DE\" lang=\"de-DE\">" +
                         "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />"
-                );
+        );
         sb.append("<head></head><body>");
         String s=html.substring(html.indexOf("</form>")+5);
         sb.append(s.substring(s.indexOf("<table>"),s.indexOf("</table>")));
@@ -168,113 +157,6 @@ public class Flights extends Activity
         sb.append("</table>");
         sb.append("</body></html>");
         return sb.toString();
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_flights, container, false);
-            final TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            //textView.setText(Integer.toString(getArguments().getInt(ARG_SECTION_NUMBER)));
-
-            final WebView v = (WebView) rootView.findViewById(R.id.webView);
-
-            final SharedPreferences settings = getActivity().getSharedPreferences("login_data", 0);
-
-            switch(getArguments().getInt(ARG_SECTION_NUMBER)){
-            case 1:
-                textView.setText("Flüge für " + settings.getString("username",""));
-                if(settings.getString("content","").equals("")){
-                try{new LoginToACB(settings.getString("username", ""),settings.getString("password", ""), "http://www.aeroclub-bamberg.de/index.php/component/comprofiler/login", new LoginToACB.LoginToACBListener() {
-                    @Override
-                    public void completionCallBack(String html) {
-                        v.loadData(formatWebViewContent(html),"text/html; charset=UTF-8", null);
-                        settings.edit().putString("content", html).commit();
-                        //v.loadData(html,"text/html; charset=UTF-8", null);
-                        //showPopUp("File:", html);
-                    }
-                }).execute();}
-                catch(Exception e){textView.setText(e.getMessage());}}
-                else{
-                    v.loadData(formatWebViewContent(settings.getString("content", "")), "text/html; charset=UTF-8", null);
-                }
-                break;
-                case 2:
-                    textView.setText("\t Flugbuch ACB\n (c)2013-2014 Maximilian Gall");
-            }
-
-            return rootView;
-        }
-
-        public void showPopUp(String head, String content){
-            try{
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity().getBaseContext());
-                builder.setMessage(content);
-                builder.setTitle(head);
-                builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                    }
-                }
-                );
-                AlertDialog dialog = builder.create();
-                dialog.show();
-            }catch(Exception e){
-            }
-        }
-
-        public String formatWebViewContent(String html){
-            StringBuilder sb = new StringBuilder();
-            sb.append(
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"+
-                    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" +
-                    "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"de-DE\" lang=\"de-DE\">" +
-                    "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />");
-            sb.append("<head></head><body>");
-            String s=html.substring(html.lastIndexOf("</form>"));
-            sb.append(s.substring(s.indexOf("<table>"),s.indexOf("</table>")));
-            sb.append("</table>");
-
-            //Zusammenfassung
-
-            s=s.substring(s.indexOf("</table>")+8);
-            s=s.substring(s.indexOf("<table>"),s.indexOf("</table>"));
-            sb.append(s);
-            sb.append("</table>");
-            sb.append("</body></html>");
-            return sb.toString();
-        }
-
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((Flights) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
     }
 
     public static class LoginToACB extends AsyncTask<Void, Void, String> {
@@ -331,7 +213,7 @@ public class Flights extends Activity
                 HttpResponse response = client.execute(request, localContext);
 
                 HttpResponse responseFlights = client.execute(new HttpGet(
-                        "http://www.aeroclub-bamberg.de/index.php?option=com_flugbuch&boxchecked=0&controller=flugbuch&showstart=2001-06-01&showend=2020-02-09"), localContext);
+                        "http://www.aeroclub-bamberg.de/index.php?option=com_flugbuch&boxchecked=0&controller=flugbuch&showstart="+startDate+"&showend="+endDate), localContext);
 
                 InputStream in;
                 in = responseFlights.getEntity().getContent();
@@ -351,7 +233,6 @@ public class Flights extends Activity
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             return result;
         }
 
